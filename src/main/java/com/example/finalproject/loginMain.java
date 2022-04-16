@@ -2,10 +2,12 @@ package com.example.finalproject;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -27,7 +29,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Scanner;
+import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -40,6 +45,11 @@ public class loginMain extends Application {
     Button newIssue, issueList, logout;
     GridPane grid = new GridPane();
     Text header;
+
+    //Elements for creating user
+    TextField txtUsername = new TextField();
+    TextField txtPassword = new TextField();
+    TextField txtUserType = new TextField();
 
     //Storing Data
     FileWriter fw = null; BufferedWriter bw = null; PrintWriter pw = null;
@@ -60,7 +70,6 @@ public class loginMain extends Application {
         }
         return issues;
     }
-
     public static void main(String[] args) {
         launch(args);
     }
@@ -74,9 +83,33 @@ public class loginMain extends Application {
     //Actual Tools
     Scene theIssues = null;
     Scene managerIssuesList = null;
+    Scene createUserScene = null;
+    Scene assignIssueScene = null;
 
     @Override
     public void start(Stage primaryStage) {
+        Manager admin = new Manager();
+
+        Scanner scan=null;
+        try{
+            File file = new File("useraccounts.txt");
+            scan = new Scanner(file);
+            while(scan.hasNext()){
+                String nl = scan.nextLine();
+                String[] keyval = nl.split(",");
+                //username
+                String key = keyval[0];
+                //password
+                String val = keyval[1];
+                Manager.userAccounts.put(keyval[0], keyval[1]);
+            }
+        }catch(Exception e){
+            System.out.println("Can't read file");
+        }finally{
+            if(scan != null) scan.close();
+        }
+
+
         stage = primaryStage;
 
         managerScreen = getManagerScreen();
@@ -86,6 +119,8 @@ public class loginMain extends Application {
 
         theIssues = getNewIssue();
         managerIssuesList = getManagerIssuesList();
+        createUserScene = getCreateUser();
+        assignIssueScene = getAssignIssue();
 
         primaryStage.setResizable(false);
         stage.setScene(loginScreen);
@@ -110,8 +145,8 @@ public class loginMain extends Application {
         userTextField = new TextField();
         grid.add(userTextField, 1, 1);
 
-        Label password = new Label("Password:");
-        grid.add(password, 0, 2);
+        Label lblPassword = new Label("Password:");
+        grid.add(lblPassword, 0, 2);
 
         passwordText = new PasswordField();
         grid.add(passwordText, 1, 2);
@@ -124,6 +159,8 @@ public class loginMain extends Application {
 
         final Text actionTarget = new Text();
         grid.add(actionTarget, 1, 6);
+
+
 
         signIn.setOnAction(e -> users());
 
@@ -139,10 +176,14 @@ public class loginMain extends Application {
     }
 
     public Scene users(){
-        while(true) {
-            try {
-                final Text error = new Text();
-                if (userTextField.getText().equals("Manager") && passwordText.getText().equals(("123"))) {
+        String username = userTextField.getText();
+        String password = passwordText.getText();
+        try {
+            final Text error = new Text();
+            //Checks userAccounts hash to see if it is a valid account
+            if (Manager.userAccounts.containsKey(username) && Manager.userAccounts.get(username).equals(password)) {
+                //Checks what kind of account it is
+                if(Manager.users.get(username) instanceof Manager){
                     stage.setTitle("Manager Screen");
                     switchScreens(managerScreen);
                     userTextField.setText("");
@@ -150,15 +191,7 @@ public class loginMain extends Application {
                     grid.add(error, 1, 6);
                     error.setText("");
                 }
-                if (userTextField.getText().equals("User") && passwordText.getText().equals("")) {
-                    stage.setTitle("User Screen");
-                    switchScreens(userScreen);
-                    userTextField.setText("");
-                    passwordText.setText("");
-                    grid.add(error, 1, 6);
-                    error.setText("");
-                }
-                if (userTextField.getText().equals("Developer") && passwordText.getText().equals("")) {
+                else if(Manager.users.get(username) instanceof Developer){
                     stage.setTitle("Developer Screen");
                     switchScreens(developerScreen);
                     userTextField.setText("");
@@ -166,27 +199,37 @@ public class loginMain extends Application {
                     grid.add(error, 1, 6);
                     error.setFill(Color.BLUE);
                     error.setText("");
-                } else {
-                    PauseTransition pause = new PauseTransition(Duration.seconds(2));
-                    pause.setOnFinished(e -> error.setText(null));
-                    pause.play();
-                    grid.add(error, 1, 6);
-                    error.setFill(Color.FIREBRICK);
-                    error.setText("Wrong or empty credentials");
                 }
-            } catch (Exception e) {
-                System.out.println("Error");
+                else if(Manager.users.get(username) instanceof User){
+                    stage.setTitle("User Screen");
+                    switchScreens(userScreen);
+                    userTextField.setText("");
+                    passwordText.setText("");
+                    grid.add(error, 1, 6);
+                    error.setText("");
+                }
             }
-            return null;
+            else {
+                PauseTransition pause = new PauseTransition(Duration.seconds(2));
+                pause.setOnFinished(e -> error.setText(null));
+                pause.play();
+                grid.add(error, 1, 6);
+                error.setFill(Color.FIREBRICK);
+                error.setText("Wrong or empty credentials");
+            }
+        } catch (Exception e) {
+            System.out.println("Error");
         }
+        return null;
     }
 
-    //Scene for Managers
+    //Scenes and Methods for Managers
 
     public Scene getManagerScreen(){
         GridPane pane = new GridPane();
         GridPane fields = new GridPane();
         HBox theButtons = new HBox();
+        HBox moreButtons = new HBox();
         HBox lonelyButton = new HBox();
 
         header = new Text("Manager Control");
@@ -194,6 +237,7 @@ public class loginMain extends Application {
         pane.setAlignment(Pos.CENTER);
         fields.setAlignment(Pos.CENTER);
         theButtons.setAlignment(Pos.CENTER);
+        moreButtons.setAlignment(Pos.CENTER);
         lonelyButton.setAlignment(Pos.CENTER);
 
         newIssue = new Button("New Issue");
@@ -208,11 +252,19 @@ public class loginMain extends Application {
         createUser.setPrefHeight(30);
         createUser.setPrefWidth(100);
 
+        Button assignIssue = new Button("Assign Issue");
+        createUser.setPrefHeight(30);
+        createUser.setPrefWidth(100);
+
         fields.add(header, 0, 0);
 
         theButtons.getChildren().addAll(newIssue, issueList, createUser);
         theButtons.setSpacing(25);
         theButtons.setPadding(new Insets(20, 20, 20, 20));
+
+        moreButtons.getChildren().addAll(assignIssue);
+        moreButtons.setSpacing(25);
+        moreButtons.setPadding(new Insets(20, 20, 20, 20));
 
         logout = new Button("Logout");
         lonelyButton.getChildren().add(logout);
@@ -222,11 +274,14 @@ public class loginMain extends Application {
         pane.setPadding(new Insets(20, 20, 20, 20));
         pane.add(fields, 0, 0);
         pane.add(theButtons, 0, 1);
-        pane.add(lonelyButton, 0, 2);
+        pane.add(moreButtons, 0, 2);
+        pane.add(lonelyButton, 0, 3);
 
         logout.setOnAction(e -> switchScreens(getLogout()));
         newIssue.setOnAction(e -> switchScreens(theIssues));
         issueList.setOnAction(e -> switchScreens(managerIssuesList));
+        createUser.setOnAction(e -> switchScreens(createUserScene));
+        assignIssue.setOnAction(e -> switchScreens(assignIssueScene));
 
         stage.setTitle("Manager Screen");
         managerScreen = new Scene(pane, 400,200);
@@ -261,6 +316,148 @@ public class loginMain extends Application {
         return managerIssuesList;
     }
 
+    /** Show the create user screen
+     * 
+     * @return create user scene
+     */
+    public Scene getCreateUser(){
+        BorderPane pane= new BorderPane();
+        BorderPane input = new BorderPane();
+        GridPane fields = new GridPane();
+        HBox buttons = new HBox();
+
+        Button btnSubmit = new Button("Submit");
+        Button returnBtn = new Button("Return");
+
+        Label lblUserName = new Label("Username: ");
+        Label lblPassword = new Label("Password: ");
+        Label lblUserType = new Label("User Type: ");
+
+        fields.setAlignment(Pos.CENTER);
+        fields.setPadding(new Insets(5));
+        fields.setVgap(3);
+        fields.setHgap(3);
+        fields.add(lblUserName, 0, 0);
+        fields.add(lblPassword, 0, 1);
+        fields.add(lblUserType, 0, 2);
+        fields.add(txtUsername, 1, 0);
+        fields.add(txtPassword, 1, 1);
+        fields.add(txtUserType, 1, 2);
+
+
+        input.setBottom(buttons);
+        pane.setCenter(fields);
+        buttons.setPadding(new Insets(5));
+        buttons.setSpacing(10);
+        buttons.getChildren().addAll(btnSubmit, returnBtn);
+        pane.setBottom(buttons);
+
+        btnSubmit.setOnAction(e -> addUser());
+
+        returnBtn.setOnAction(e -> goBack());
+
+        createUserScene = new Scene(pane, 400,200);
+        return createUserScene;
+    }
+
+    public Scene getAssignIssue(){
+        BorderPane pane= new BorderPane();
+        BorderPane input = new BorderPane();
+        GridPane fields = new GridPane();
+        HBox buttons = new HBox();
+
+        Button btnSubmit = new Button("Submit");
+        Button returnBtn = new Button("Return");
+
+        Label lblDevs = new Label("Available Developers");
+        Label lblIssues = new Label("Unassigned Issues");
+
+        ArrayList<String> availableIssues = new ArrayList<String>();
+        ArrayList<String> availableDevs = new ArrayList<String>();
+
+        for(String i : Developer.issueHash.values()){
+            if(i.equals("New") || i.equals("Rejected")){
+                availableIssues.add(i);
+            }
+        }
+        for(String i : Manager.devs.values()){
+            if(i.equals("No Task")){
+                availableDevs.add(i);
+            }
+        }
+
+        //Only show devs who do not have a task to complete
+        ComboBox<String> cbDevs = new ComboBox<String>(FXCollections.observableArrayList(availableDevs));
+        //Only show issues that is not assigned to a dev
+        ComboBox<String> cbIssues = new ComboBox<String>(FXCollections.observableArrayList(availableIssues));
+
+        fields.setAlignment(Pos.CENTER);
+        fields.setPadding(new Insets(5));
+        fields.setVgap(3);
+        fields.setHgap(20);
+
+        fields.add(lblDevs, 0, 0);
+        fields.add(cbDevs, 0, 1);
+        fields.add(lblIssues, 1, 0);
+        fields.add(cbIssues, 1, 1);
+
+        input.setBottom(buttons);
+        pane.setCenter(fields);
+        buttons.setPadding(new Insets(5));
+        buttons.setSpacing(10);
+        buttons.getChildren().addAll(btnSubmit, returnBtn);
+        pane.setBottom(buttons);
+
+        btnSubmit.setOnAction(e -> addUser());
+
+        returnBtn.setOnAction(e -> goBack());
+
+        assignIssueScene = new Scene(pane, 400,200);
+        return assignIssueScene;
+    }
+
+    /** Create a new user to the system
+     * 
+     * @param username user's name
+     * @param password user's password
+     * @param userType type of user: user, dev or manager
+     */
+    public void addUser(){
+        String username = txtUsername.getText();
+        String password = txtPassword.getText();
+        String userType = txtUserType.getText();
+        if(!Manager.addUser(userType, username, password)){
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("ERROR");
+            a.setHeaderText("Cannot create user");
+            a.setContentText("Username is taken or user type does not exist");
+            a.show();
+        }
+        else{
+            try{
+                FileWriter fw = new FileWriter("useraccounts.txt", true);
+                fw.append("" + username + "," + password + "\n");
+                fw.close();
+            }catch(Exception e){
+                Alert a = new Alert(Alert.AlertType.WARNING);
+                a.setTitle("ERROR");
+                a.setHeaderText("Something went wrong");
+                a.setContentText("Try again please");
+                a.show();
+            }
+            //Creating a dialog
+            Dialog<String> dialog = new Dialog<String>();
+            dialog.setTitle("Created user");
+            ButtonType type = new ButtonType("Ok", ButtonData.OK_DONE);
+            dialog.setContentText("User was successfully created!");
+            dialog.getDialogPane().getButtonTypes().add(type);
+            dialog.showAndWait();
+            txtUsername.setText("");
+            txtPassword.setText("");
+            txtUserType.setText("");
+        }
+
+    }
     //Scene for Developers
 
     public Scene getDeveloperScreen(){
