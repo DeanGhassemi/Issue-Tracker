@@ -7,7 +7,7 @@ public class Manager extends Developer{
     // Username -> Password
     public static HashMap<String, String> userAccounts = new HashMap<String, String>();
     // Username -> Assigned Issue
-    public static HashMap<String, String> devs = new HashMap<String, String>();
+    public static HashMap<String, String> devIssues = new HashMap<String, String>();
     // Username -> Object
     public static HashMap<String, User> users= new HashMap<String, User>();
 
@@ -26,20 +26,25 @@ public class Manager extends Developer{
      *  issue, they will be assigned another task
      * 
      * @param issue issue to be assigned
+     * 
+     * Possibly never used
      */
     public void assignIssue(String issue){
+        /** 
         boolean occupied = true;
         if(issueHash.get(issue).equals("New") ||
-        issueHash.get(issue).equals("Rejected")){
+        issueHash.get(issue).equals("Rejected")){     
             // Going to be changed. Assigned by drop down menu
             for(String key: devs.keySet()){
-                if(devs.get(key).equals("No task")){
-                    devs.replace(key, issue);
-                    occupied = false;
-                    break;
-                }
+               if(devs.get(key).equals("No task")){
+                   devs.replace(key, issue);
+                   occupied = false;
+                   break;
+               }
             }
         }
+        */
+        
     }
     /** Closes the issue
      * 
@@ -87,6 +92,7 @@ public class Manager extends Developer{
                 return false;
             }
             userAccounts.put(username, password);
+            
             return true;
         }
         return false;

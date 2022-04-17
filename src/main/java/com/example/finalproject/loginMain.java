@@ -91,6 +91,7 @@ public class loginMain extends Application {
         Manager admin = new Manager();
 
         Scanner scan=null;
+        // Account information of users.
         try{
             File file = new File("useraccounts.txt");
             scan = new Scanner(file);
@@ -101,7 +102,7 @@ public class loginMain extends Application {
                 String key = keyval[0];
                 //password
                 String val = keyval[1];
-                Manager.userAccounts.put(keyval[0], keyval[1]);
+                Manager.userAccounts.put(key, val);
             }
         }catch(Exception e){
             System.out.println("Can't read file");
@@ -109,6 +110,45 @@ public class loginMain extends Application {
             if(scan != null) scan.close();
         }
 
+        /*Developers and their assigned issue. If no issue, fill with
+        "No Issue" */
+        try{
+            File file = new File("developerIssues.txt");
+            scan = new Scanner(file);
+            while(scan.hasNext()){
+                String nl = scan.nextLine();
+                String[] keyval = nl.split(",");
+                //username
+                String key = keyval[0];
+                //password
+                String val = keyval[1];
+                Manager.devIssues.put(key, val);
+            }
+        }catch(Exception e){
+            System.out.println("Can't read file");
+        }finally{
+            if(scan != null) scan.close();
+        }
+
+        /* Tracking the usernames and their role by object class */
+        try{
+            File file = new File("userRoles.txt");
+            scan = new Scanner(file);
+            while(scan.hasNext()){
+                String nl = scan.nextLine();
+                String[] keyval = nl.split(",");
+                //username
+                String key = keyval[0];
+                //password
+                String val = keyval[1];
+                //Figure out how to save it
+                //Manager.users.put(key, val);
+            }
+        }catch(Exception e){
+            System.out.println("Can't read file");
+        }finally{
+            if(scan != null) scan.close();
+        }
 
         stage = primaryStage;
 
@@ -359,7 +399,10 @@ public class loginMain extends Application {
         createUserScene = new Scene(pane, 400,200);
         return createUserScene;
     }
-
+    /** Creates and shows the scene of assignIssue
+     * 
+     * @return Scene of assignIssue
+     */
     public Scene getAssignIssue(){
         BorderPane pane= new BorderPane();
         BorderPane input = new BorderPane();
@@ -380,7 +423,7 @@ public class loginMain extends Application {
                 availableIssues.add(i);
             }
         }
-        for(String i : Manager.devs.values()){
+        for(String i : Manager.devIssues.values()){
             if(i.equals("No Task")){
                 availableDevs.add(i);
             }
@@ -408,12 +451,29 @@ public class loginMain extends Application {
         buttons.getChildren().addAll(btnSubmit, returnBtn);
         pane.setBottom(buttons);
 
-        btnSubmit.setOnAction(e -> addUser());
+        btnSubmit.setOnAction(e -> assignIssue(cbDevs, cbIssues));
 
         returnBtn.setOnAction(e -> goBack());
-
+        
         assignIssueScene = new Scene(pane, 400,200);
         return assignIssueScene;
+    }
+
+    public void assignIssue(ComboBox cbDevs, ComboBox cbIssues){
+        String devUsername = (String) cbDevs.getValue();
+        String issueName = (String) cbIssues.getValue();
+        Manager.devIssues.replace(devUsername, issueName);
+        try{
+            FileWriter fw = new FileWriter("developerIssues.txt", true);
+            fw.append("" + devUsername + "," + issueName + "\n");
+            fw.close();
+        }catch(Exception e){
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("ERROR");
+            a.setHeaderText("Something went wrong");
+            a.setContentText("Try again please");
+            a.show();
+        }
     }
 
     /** Create a new user to the system
@@ -435,9 +495,12 @@ public class loginMain extends Application {
         }
         else{
             try{
+                FileWriter fwUR = new FileWriter("userRoles.txt", true);
                 FileWriter fw = new FileWriter("useraccounts.txt", true);
+                fwUR.append("" + username + "," + Manager.users.get(username) + "\n");
                 fw.append("" + username + "," + password + "\n");
                 fw.close();
+                fwUR.close();
             }catch(Exception e){
                 Alert a = new Alert(Alert.AlertType.WARNING);
                 a.setTitle("ERROR");

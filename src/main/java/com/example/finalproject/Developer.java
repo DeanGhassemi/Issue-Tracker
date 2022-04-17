@@ -2,7 +2,7 @@ package com.example.finalproject;
 
 import java.util.*;
 
-public class Developer extends User {
+public class Developer extends User{
 
     
     // IssueName -> Status
