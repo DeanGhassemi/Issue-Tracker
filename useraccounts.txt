@@ -1,2 +1,5 @@
-manager,123
-Dean,123
+manager~123,manager
+dean~123,user
+josue~123,developer
+magic~123,developer
+josh~123,developer

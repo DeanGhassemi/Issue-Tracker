@@ -7,8 +7,7 @@ public class Developer extends User{
     
     // IssueName -> Status
     protected static HashMap<String, String> issueHash = new HashMap<String, String>();
-    // IssueName -> Description
-    protected static HashMap<String, String> detailHash = new HashMap<String, String>();
+    
     //Create user profile and retrieve issueList
     public Developer(String username, String password) {
         super(username, password);

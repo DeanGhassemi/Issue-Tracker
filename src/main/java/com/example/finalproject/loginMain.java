@@ -3,6 +3,7 @@ package com.example.finalproject;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -51,24 +52,38 @@ public class loginMain extends Application {
     TextField txtPassword = new TextField();
     TextField txtUserType = new TextField();
 
+    //Elements for adding an Issue
+    Label lblNewIssue = new Label("Issue Name:");
+    TextField txtNewIssue = new TextField();
+
+    // to know which user is logged in
+    String loggedIn;
+
     //Storing Data
-    FileWriter fw = null; BufferedWriter bw = null; PrintWriter pw = null;
+    FileWriter fw = null;
 
-    public File getIssues() throws IOException {
-        File issues = new File("issuesList.txt");
+    public void getIssues() throws IOException {
         try{
-            fw = new FileWriter("issuesList.txt", true);
-            bw = new BufferedWriter(fw);
-            pw = new PrintWriter(bw);
-
-            pw.println(taDisplay.getText());
-            pw.flush();
-        }finally{
-            pw.close();
-            bw.close();
+            FileWriter fw = new FileWriter("issuesList.txt", true);
+            fw.append(loggedIn + "," + txtNewIssue.getText() + "~New" + "\n");
             fw.close();
+            Manager.userObjects.get(loggedIn).getIssues().put(txtNewIssue.getText(), "New");
+            Developer.issueHash.put(txtNewIssue.getText(), "New");
+            //Creating a dialog
+            Dialog<String> dialog = new Dialog<String>();
+            dialog.setTitle("Added Issue");
+            ButtonType type = new ButtonType("Ok", ButtonData.OK_DONE);
+            dialog.setContentText("Issue was successfully added!");
+            dialog.getDialogPane().getButtonTypes().add(type);
+            dialog.showAndWait();
+            txtNewIssue.setText("");
+        }catch(Exception e){
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("ERROR");
+            a.setHeaderText("Something went wrong");
+            a.setContentText("Try again please");
+            a.show();
         }
-        return issues;
     }
     public static void main(String[] args) {
         launch(args);
@@ -98,11 +113,15 @@ public class loginMain extends Application {
             while(scan.hasNext()){
                 String nl = scan.nextLine();
                 String[] keyval = nl.split(",");
-                //username
-                String key = keyval[0];
-                //password
-                String val = keyval[1];
-                Manager.userAccounts.put(key, val);
+                //username~password
+                String info = keyval[0];
+                //role
+                String role = keyval[1];
+                String[] userpass = info.split("~");
+                String username = userpass[0];
+                String password = userpass[1];
+                Manager.addUser(role, username, password);
+                Manager.userAccounts.put(username + "~" + password, role);
             }
         }catch(Exception e){
             System.out.println("Can't read file");
@@ -120,7 +139,7 @@ public class loginMain extends Application {
                 String[] keyval = nl.split(",");
                 //username
                 String key = keyval[0];
-                //password
+                //assigned issue
                 String val = keyval[1];
                 Manager.devIssues.put(key, val);
             }
@@ -130,26 +149,29 @@ public class loginMain extends Application {
             if(scan != null) scan.close();
         }
 
-        /* Tracking the usernames and their role by object class */
         try{
-            File file = new File("userRoles.txt");
+            File file = new File("issuesList.txt");
             scan = new Scanner(file);
             while(scan.hasNext()){
                 String nl = scan.nextLine();
+                // 
                 String[] keyval = nl.split(",");
-                //username
-                String key = keyval[0];
-                //password
-                String val = keyval[1];
-                //Figure out how to save it
-                //Manager.users.put(key, val);
+                //username (Key)
+                String username = keyval[0];
+                //issue~status
+                String issuer = keyval[1];
+                // 
+                String[] userpass = issuer.split("~");
+                String issue = userpass[0];
+                String status = userpass[1];
+                Developer.issueHash.put(issue, status);
+                Manager.userObjects.get(username).getIssues().put(issue, status);
             }
         }catch(Exception e){
             System.out.println("Can't read file");
         }finally{
             if(scan != null) scan.close();
         }
-
         stage = primaryStage;
 
         managerScreen = getManagerScreen();
@@ -175,11 +197,11 @@ public class loginMain extends Application {
         grid.setVgap(10);
         grid.setPadding(new Insets(40, 25, 25, 25));
 
-        Text sceneTitle = new Text("IssueTracker by JD");
+        Text sceneTitle = new Text("IssueTracker Sign-In");
         sceneTitle.setFont(Font.font("Thoma", FontWeight.SEMI_BOLD, 20));
         grid.add(sceneTitle, 0, 0, 2, 1);
 
-        Label userName = new Label("User:");
+        Label userName = new Label("Username:");
         grid.add(userName, 0, 1);
 
         userTextField = new TextField();
@@ -221,9 +243,9 @@ public class loginMain extends Application {
         try {
             final Text error = new Text();
             //Checks userAccounts hash to see if it is a valid account
-            if (Manager.userAccounts.containsKey(username) && Manager.userAccounts.get(username).equals(password)) {
+            if (Manager.userAccounts.containsKey(username + "~" + password)) {
                 //Checks what kind of account it is
-                if(Manager.users.get(username) instanceof Manager){
+                if(Manager.userAccounts.get(username + "~" + password).equals("manager")){
                     stage.setTitle("Manager Screen");
                     switchScreens(managerScreen);
                     userTextField.setText("");
@@ -231,7 +253,7 @@ public class loginMain extends Application {
                     grid.add(error, 1, 6);
                     error.setText("");
                 }
-                else if(Manager.users.get(username) instanceof Developer){
+                else if(Manager.userAccounts.get(username + "~" + password).equals("developer")){
                     stage.setTitle("Developer Screen");
                     switchScreens(developerScreen);
                     userTextField.setText("");
@@ -240,7 +262,7 @@ public class loginMain extends Application {
                     error.setFill(Color.BLUE);
                     error.setText("");
                 }
-                else if(Manager.users.get(username) instanceof User){
+                else if(Manager.userAccounts.get(username + "~" + password).equals("user")){
                     stage.setTitle("User Screen");
                     switchScreens(userScreen);
                     userTextField.setText("");
@@ -248,6 +270,7 @@ public class loginMain extends Application {
                     grid.add(error, 1, 6);
                     error.setText("");
                 }
+                loggedIn = username;
             }
             else {
                 PauseTransition pause = new PauseTransition(Duration.seconds(2));
@@ -336,15 +359,13 @@ public class loginMain extends Application {
         Button submit = new Button("Submit");
         Button returnBtn = new Button("Return");
 
-        TextArea taDisplay = new TextArea();
-        taDisplay.setPrefWidth(200);
-        taDisplay.setPrefHeight(100);
+        ListView<String> lvDisplay = new ListView<String>();
         fields.setPadding(new Insets(5));
         fields.setVgap(3);
         fields.setHgap(3);
 
         input.setBottom(buttons);
-        pane.setCenter(taDisplay);
+        pane.setLeft(lvDisplay);
         buttons.setPadding(new Insets(5));
         buttons.setSpacing(10);
         buttons.getChildren().addAll(submit, returnBtn);
@@ -418,21 +439,37 @@ public class loginMain extends Application {
         ArrayList<String> availableIssues = new ArrayList<String>();
         ArrayList<String> availableDevs = new ArrayList<String>();
 
-        for(String i : Developer.issueHash.values()){
-            if(i.equals("New") || i.equals("Rejected")){
+        for(String i : Developer.issueHash.keySet()){
+            if(Developer.issueHash.get(i).equals("New") || Developer.issueHash.get(i).equals("Rejected")){
                 availableIssues.add(i);
             }
         }
-        for(String i : Manager.devIssues.values()){
-            if(i.equals("No Task")){
+        for(String i : Manager.devIssues.keySet()){
+            if(Manager.devIssues.get(i).equals("*")){
                 availableDevs.add(i);
+            }
+            try{
+                FileWriter fw = new FileWriter("developerIssues.txt");
+                fw.append("" + i + "," + Manager.devIssues.get(i) + "\n");
+                fw.close();
+            }catch(Exception e){
+                Alert a = new Alert(Alert.AlertType.WARNING);
+                a.setTitle("ERROR");
+                a.setHeaderText("Something went wrong");
+                a.setContentText("Try again please");
+                a.show();
             }
         }
 
+
+        ObservableList<String> list = FXCollections.observableArrayList(availableDevs);
+        ObservableList<String> list2 = FXCollections.observableArrayList(availableIssues);
         //Only show devs who do not have a task to complete
-        ComboBox<String> cbDevs = new ComboBox<String>(FXCollections.observableArrayList(availableDevs));
+        ComboBox<String> cbDevs = new ComboBox<String>(list);
         //Only show issues that is not assigned to a dev
-        ComboBox<String> cbIssues = new ComboBox<String>(FXCollections.observableArrayList(availableIssues));
+        ComboBox<String> cbIssues = new ComboBox<String>(list2);
+        cbDevs.setItems(list);
+        cbIssues.setItems(list2);
 
         fields.setAlignment(Pos.CENTER);
         fields.setPadding(new Insets(5));
@@ -458,7 +495,6 @@ public class loginMain extends Application {
         assignIssueScene = new Scene(pane, 400,200);
         return assignIssueScene;
     }
-
     public void assignIssue(ComboBox cbDevs, ComboBox cbIssues){
         String devUsername = (String) cbDevs.getValue();
         String issueName = (String) cbIssues.getValue();
@@ -467,6 +503,19 @@ public class loginMain extends Application {
             FileWriter fw = new FileWriter("developerIssues.txt", true);
             fw.append("" + devUsername + "," + issueName + "\n");
             fw.close();
+            FileWriter fw2 = new FileWriter("issuesList.txt");
+            fw2.append(loggedIn + "," + issueName + "~Assigned" + "\n");
+            fw2.close();
+            Developer.issueHash.replace(issueName, "Assigned");
+            //Creating a dialog
+            Dialog<String> dialog = new Dialog<String>();
+            dialog.setTitle("Assigning Issue");
+            ButtonType type = new ButtonType("Ok", ButtonData.OK_DONE);
+            dialog.setContentText("Issue was successfully assigned!");
+            dialog.getDialogPane().getButtonTypes().add(type);
+            dialog.showAndWait();
+            cbDevs.setValue(null);
+            cbIssues.setValue(null);
         }catch(Exception e){
             Alert a = new Alert(Alert.AlertType.WARNING);
             a.setTitle("ERROR");
@@ -495,12 +544,19 @@ public class loginMain extends Application {
         }
         else{
             try{
-                FileWriter fwUR = new FileWriter("userRoles.txt", true);
                 FileWriter fw = new FileWriter("useraccounts.txt", true);
-                fwUR.append("" + username + "," + Manager.users.get(username) + "\n");
-                fw.append("" + username + "," + password + "\n");
+                fw.append("\n" + username + "~" + password + "," + userType);
                 fw.close();
-                fwUR.close();
+                //Creating a dialog
+                Dialog<String> dialog = new Dialog<String>();
+                dialog.setTitle("Created user");
+                ButtonType type = new ButtonType("Ok", ButtonData.OK_DONE);
+                dialog.setContentText("User was successfully created!");
+                dialog.getDialogPane().getButtonTypes().add(type);
+                dialog.showAndWait();
+                txtUsername.setText("");
+                txtPassword.setText("");
+                txtUserType.setText("");
             }catch(Exception e){
                 Alert a = new Alert(Alert.AlertType.WARNING);
                 a.setTitle("ERROR");
@@ -508,16 +564,7 @@ public class loginMain extends Application {
                 a.setContentText("Try again please");
                 a.show();
             }
-            //Creating a dialog
-            Dialog<String> dialog = new Dialog<String>();
-            dialog.setTitle("Created user");
-            ButtonType type = new ButtonType("Ok", ButtonData.OK_DONE);
-            dialog.setContentText("User was successfully created!");
-            dialog.getDialogPane().getButtonTypes().add(type);
-            dialog.showAndWait();
-            txtUsername.setText("");
-            txtPassword.setText("");
-            txtUserType.setText("");
+
         }
 
     }
@@ -626,14 +673,15 @@ public class loginMain extends Application {
         Button submit = new Button("Submit");
         Button returning = new Button("Return");
 
-        taDisplay.setPrefWidth(200);
-        taDisplay.setPrefHeight(100);
+        fields.setAlignment(Pos.CENTER);
         fields.setPadding(new Insets(5));
         fields.setVgap(3);
         fields.setHgap(3);
+        fields.add(lblNewIssue, 0, 0);
+        fields.add(txtNewIssue, 1, 0);
 
         input.setBottom(buttons);
-        pane.setCenter(taDisplay);
+        pane.setCenter(fields);
         buttons.setPadding(new Insets(5));
         buttons.setSpacing(10);
         buttons.getChildren().addAll(submit, returning);
@@ -643,6 +691,7 @@ public class loginMain extends Application {
         submit.setOnAction(e -> {
             try {
                 getIssues();
+                Manager.userObjects.get(loggedIn).addIssue(taDisplay.getText());
                 taDisplay.setText("");
             } catch (IOException ex) {
                 ex.printStackTrace();

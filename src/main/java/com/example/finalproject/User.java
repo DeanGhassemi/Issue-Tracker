@@ -8,10 +8,7 @@ public class User{
     private String password;
 
     // IssueName -> Status
-    private HashMap<String, String> issueHash = new HashMap<String, String>();
-    // IssueName -> Description
-    private HashMap<String, String> detailHash = new HashMap<String, String>();
-
+    private HashMap<String, String> issues = new HashMap<String, String>();
 
     //Create user profile
     public User(String username, String password) {
@@ -23,10 +20,9 @@ public class User{
     * Adds an issue to the map of issues after submitting
     *
     * @param issueName name of the issue
-    * @param issueStatus status of the issue
     */
-    public void addIssue(String issueName, HashMap<String, String> issueHash){
-        issueHash.put(issueName, "Pending");
+    public void addIssue(String issueName){
+        issues.put(issueName, "Pending");
     }
 
     /**
@@ -51,11 +47,7 @@ public class User{
         this.password = password;
     }
     
-    public HashMap<String,String> getIssueHash() {
-        return this.issueHash;
-    }
-
-    public HashMap<String,String> getDetailHash() {
-        return this.detailHash;
+    public HashMap<String,String> getIssues() {
+        return this.issues;
     }
 }

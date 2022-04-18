@@ -1,15 +1,21 @@
 package com.example.finalproject;
+import java.io.FileWriter;
 import java.util.*;
+
+import javafx.scene.control.Alert;
 
 
 public class Manager extends Developer{
 
-    // Username -> Password
+    /* Username ~ Password -> Role 
+       Also needed to recreate the users after the program closes.
+       To recreate, it works with userObjects to recreate the object
+    */
     public static HashMap<String, String> userAccounts = new HashMap<String, String>();
     // Username -> Assigned Issue
     public static HashMap<String, String> devIssues = new HashMap<String, String>();
     // Username -> Object
-    public static HashMap<String, User> users= new HashMap<String, User>();
+    public static HashMap<String, User> userObjects = new HashMap<String, User>();
 
     //Create user profile
     public Manager(String username, String password) {
@@ -18,8 +24,7 @@ public class Manager extends Developer{
     // First boot up of the program
     public Manager(){
         super("manager", "123");
-        userAccounts.put("manager", "123");
-        users.put("manager", new Manager("manager", "123"));
+        userAccounts.put("manager~123", "manager");
     }
     /** Assigns an issue to a dev without a task. If all devs have a task, it
      *  will add the task to a queue so when a developer resolves or rejects an
@@ -44,7 +49,6 @@ public class Manager extends Developer{
             }
         }
         */
-        
     }
     /** Closes the issue
      * 
@@ -79,24 +83,25 @@ public class Manager extends Developer{
     public static boolean addUser(String typeOfUser, String username, String password){
         if(!userAccounts.containsKey(username)){
             if(typeOfUser.toLowerCase().equals("user")){
-                users.put(username, new User(username, password));
+                userObjects.put(username, new User(username, password));
+                userAccounts.put(username + "~" + password, typeOfUser);
             }
             else if(typeOfUser.toLowerCase().equals("developer")){
-                users.put(username, new Developer(username, password));
-
+                userObjects.put(username, new Developer(username, password));
+                userAccounts.put(username + "~" + password, typeOfUser);
+                devIssues.put(username, "*");
             }
             else if(typeOfUser.toLowerCase().equals("manager")){
-                users.put(username, new Manager(username, password));
+                userObjects.put(username, new Manager(username, password));
+                userAccounts.put(username + "~" + password, typeOfUser);
             }
             else{
                 return false;
             }
-            userAccounts.put(username, password);
+            userAccounts.put(username + "~" + password, typeOfUser);
             
             return true;
         }
         return false;
-
-
     }
 }
