@@ -360,7 +360,6 @@ public class loginMain extends Application {
 
         Button btnValidate = new Button("Validate");
         Button btnFail = new Button("Fail");
-        Button submit = new Button("Submit");
         Button returnBtn = new Button("Return");
 
         ListView<String> lvDisplay = new ListView<String>();
@@ -382,7 +381,7 @@ public class loginMain extends Application {
         pane.setLeft(lvDisplay);
         buttons.setPadding(new Insets(5));
         buttons.setSpacing(10);
-        buttons.getChildren().addAll(submit, returnBtn);
+        buttons.getChildren().addAll(returnBtn);
         pane.setBottom(buttons);
 
         returnBtn.setOnAction(e -> goBack());
@@ -636,7 +635,6 @@ public class loginMain extends Application {
         GridPane fields = new GridPane();
         HBox buttons = new HBox();
 
-        Button submit = new Button("Submit");
         Button returnBtn = new Button("Return");
 
         ListView<String> lvDisplay = new ListView<String>();
@@ -646,16 +644,22 @@ public class loginMain extends Application {
             list.add("" + key + " ~ " + Developer.issueHash.get(key));
         }
         lvDisplay.getItems().addAll(list);
-
+        Button btnOpen = new Button("Open");
+        Button btnResolve = new Button("Resolve");
+        Button btnReject = new Button("Reject");
+        fields.add(btnOpen, 0, 0);
+        fields.add(btnResolve, 0, 1);
+        fields.add(btnReject, 0, 2);
         fields.setPadding(new Insets(5));
         fields.setVgap(3);
         fields.setHgap(3);
 
+        pane.setCenter(fields);
         input.setBottom(buttons);
-        pane.setCenter(lvDisplay);
+        pane.setLeft(lvDisplay);
         buttons.setPadding(new Insets(5));
         buttons.setSpacing(10);
-        buttons.getChildren().addAll(submit, returnBtn);
+        buttons.getChildren().addAll(returnBtn);
         pane.setBottom(buttons);
 
         returnBtn.setOnAction(e -> goBack());
@@ -718,7 +722,6 @@ public class loginMain extends Application {
         GridPane fields = new GridPane();
         HBox buttons = new HBox();
 
-        Button submit = new Button("Submit");
         Button returnBtn = new Button("Return");
 
         ListView<String> lvDisplay = new ListView<String>();
@@ -737,7 +740,7 @@ public class loginMain extends Application {
         pane.setCenter(lvDisplay);
         buttons.setPadding(new Insets(5));
         buttons.setSpacing(10);
-        buttons.getChildren().addAll(submit, returnBtn);
+        buttons.getChildren().addAll(returnBtn);
         pane.setBottom(buttons);
 
         returnBtn.setOnAction(e -> goBack());
