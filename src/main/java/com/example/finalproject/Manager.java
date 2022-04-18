@@ -3,6 +3,9 @@ import java.io.FileWriter;
 import java.util.*;
 
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.ButtonBar.ButtonData;
 
 
 public class Manager extends Developer{
@@ -52,27 +55,60 @@ public class Manager extends Developer{
     }
     /** Closes the issue
      * 
-     * @param issue issue to be closed
+     * @param issue name of the issue
      */
     public void closeIssue(String issue){
-        if(issueHash.get(issue).equals("Validate") ||
-        issueHash.get(issue).equals("Rejected")){
+        String status = issueHash.get(issue);
+        if(status.equals("Validate") || status.equals("Rejected")){
             issueHash.replace(issue, "Closed");
         }
+        else{
+            //Creating a dialog
+            Dialog<String> dialog = new Dialog<String>();
+            dialog.setTitle("Issues");
+            ButtonType type = new ButtonType("Ok", ButtonData.OK_DONE);
+            dialog.setContentText("Issue cannot be closed! Must first be validated or rejected");
+            dialog.getDialogPane().getButtonTypes().add(type);
+            dialog.showAndWait();
+        }
     }
-    /**
+    /** Validates the issue
      * 
-     * @param issue
+     * @param issue name of the issue
      */
     public void validateIssue(String issue){
-
+        String status = issueHash.get(issue);
+        if(status.equals("Resolved")){
+            issueHash.replace(issue, "Validate");
+        }
+        else{
+            //Creating a dialog
+            Dialog<String> dialog = new Dialog<String>();
+            dialog.setTitle("Issues");
+            ButtonType type = new ButtonType("Ok", ButtonData.OK_DONE);
+            dialog.setContentText("Issue cannot be validated! Must be resolved");
+            dialog.getDialogPane().getButtonTypes().add(type);
+            dialog.showAndWait();
+        }
     }
     /** Changes the status of the issue to "Failed".
      * 
-     * @param issue TBD
+     * @param issue name of the issue
      */
     public void failIssue(String issue){
-
+        String status = issueHash.get(issue);
+        if(status.equals("Resolved")){
+            issueHash.replace(issue, "Fail");
+        }
+        else{
+            //Creating a dialog
+            Dialog<String> dialog = new Dialog<String>();
+            dialog.setTitle("Issues");
+            ButtonType type = new ButtonType("Ok", ButtonData.OK_DONE);
+            dialog.setContentText("Issue cannot be failed! Must be resolved");
+            dialog.getDialogPane().getButtonTypes().add(type);
+            dialog.showAndWait();
+        }
     }
     /** Creates a new instance of a specific user
      * 

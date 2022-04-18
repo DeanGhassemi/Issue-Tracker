@@ -101,10 +101,11 @@ public class loginMain extends Application {
     Scene createUserScene = null;
     Scene assignIssueScene = null;
     Scene developerIssuesList = null;
+    Manager admin = new Manager();
+    Developer devel = new Developer();
 
     @Override
     public void start(Stage primaryStage) {
-        Manager admin = new Manager();
 
         Scanner scan=null;
         // Account information of users.
@@ -357,7 +358,7 @@ public class loginMain extends Application {
         GridPane fields = new GridPane();
         HBox buttons = new HBox();
 
-
+        Button btnClose = new Button("Close");
         Button btnValidate = new Button("Validate");
         Button btnFail = new Button("Fail");
         Button returnBtn = new Button("Return");
@@ -371,25 +372,43 @@ public class loginMain extends Application {
         lvDisplay.getItems().addAll(list);
 
         fields.add(btnValidate, 0, 0);
-        fields.add(btnFail, 1, 0);
+        fields.add(btnFail, 0,1);
+        fields.add(btnClose, 0, 2);
         fields.setPadding(new Insets(5));
         fields.setVgap(3);
         fields.setHgap(3);
 
         input.setBottom(buttons);
-        pane.setRight(fields);
+        pane.setCenter(fields);
         pane.setLeft(lvDisplay);
         buttons.setPadding(new Insets(5));
         buttons.setSpacing(10);
         buttons.getChildren().addAll(returnBtn);
         pane.setBottom(buttons);
 
+        btnClose.setOnAction(e -> closeIssue(lvDisplay));
+        btnFail.setOnAction(e -> failIssue(lvDisplay));
+        btnValidate.setOnAction(e -> validateIssue(lvDisplay));
         returnBtn.setOnAction(e -> goBack());
 
         managerIssuesList = new Scene(pane, 400,200);
         return managerIssuesList;
     }
-
+    public void closeIssue(ListView lv){
+        String issue = (String) lv.getSelectionModel().getSelectedItem();
+        String[] keyval = issue.split(" ");
+        admin.closeIssue(keyval[0]);
+    }    
+    public void failIssue(ListView lv){
+        String issue = (String) lv.getSelectionModel().getSelectedItem();
+        String[] keyval = issue.split(" ");
+        admin.failIssue(keyval[0]);
+    }
+    public void validateIssue(ListView lv){
+        String issue = (String) lv.getSelectionModel().getSelectedItem();
+        String[] keyval = issue.split(" ");
+        admin.validateIssue(keyval[0]);
+    }
     /** Show the create user screen
      * 
      * @return create user scene
@@ -513,12 +532,6 @@ public class loginMain extends Application {
         String issueName = (String) cbIssues.getValue();
         Manager.devIssues.replace(devUsername, issueName);
         try{
-            FileWriter fw = new FileWriter("developerIssues.txt", true);
-            fw.append("" + devUsername + "," + issueName + "\n");
-            fw.close();
-            FileWriter fw2 = new FileWriter("issuesList.txt");
-            fw2.append(loggedIn + "," + issueName + "~Assigned" + "\n");
-            fw2.close();
             Developer.issueHash.replace(issueName, "Assigned");
             //Creating a dialog
             Dialog<String> dialog = new Dialog<String>();
@@ -666,6 +679,22 @@ public class loginMain extends Application {
 
         developerIssuesList = new Scene(pane, 400,200);
         return developerIssuesList;
+    }
+
+    public void openIssue(ListView lv){
+        String issue = (String) lv.getSelectionModel().getSelectedItem();
+        String[] keyval = issue.split(" ");
+        devel.openIssue(keyval[0]);
+    }    
+    public void rejectIssue(ListView lv){
+        String issue = (String) lv.getSelectionModel().getSelectedItem();
+        String[] keyval = issue.split(" ");
+        devel.rejectIssue(keyval[0]);
+    }
+    public void ResolveIssue(ListView lv){
+        String issue = (String) lv.getSelectionModel().getSelectedItem();
+        String[] keyval = issue.split(" ");
+        devel.resolveIssue(keyval[0]);
     }
     //Scene for users
 

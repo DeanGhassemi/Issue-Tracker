@@ -1,4 +1,5 @@
 manager,test1~New
-dean,test2~New
-manager,test3~New
-dean,deanIssue~New
+dean,test2~Assigned
+manager,test3~Rejected
+dean,deanIssue~Validate
+dean,loseScrew~Resolved
