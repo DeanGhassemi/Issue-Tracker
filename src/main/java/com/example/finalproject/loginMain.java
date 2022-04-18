@@ -100,6 +100,7 @@ public class loginMain extends Application {
     Scene managerIssuesList = null;
     Scene createUserScene = null;
     Scene assignIssueScene = null;
+    Scene developerIssuesList = null;
 
     @Override
     public void start(Stage primaryStage) {
@@ -356,15 +357,28 @@ public class loginMain extends Application {
         GridPane fields = new GridPane();
         HBox buttons = new HBox();
 
+
+        Button btnValidate = new Button("Validate");
+        Button btnFail = new Button("Fail");
         Button submit = new Button("Submit");
         Button returnBtn = new Button("Return");
 
         ListView<String> lvDisplay = new ListView<String>();
+        ArrayList<String> list = new ArrayList<String>();
+
+        for (String key : Developer.issueHash.keySet() ) {
+            list.add("" + key + " ~ " + Developer.issueHash.get(key));
+        }
+        lvDisplay.getItems().addAll(list);
+
+        fields.add(btnValidate, 0, 0);
+        fields.add(btnFail, 1, 0);
         fields.setPadding(new Insets(5));
         fields.setVgap(3);
         fields.setHgap(3);
 
         input.setBottom(buttons);
+        pane.setRight(fields);
         pane.setLeft(lvDisplay);
         buttons.setPadding(new Insets(5));
         buttons.setSpacing(10);
@@ -610,12 +624,45 @@ public class loginMain extends Application {
 
         logout.setOnAction(e -> switchScreens(getLogout()));
         newIssue.setOnAction(e -> switchScreens(theIssues));
+        issueList.setOnAction(e -> switchScreens(getDeveloperIssuesList()));
 
         stage.setTitle("Developer Screen");
         developerScreen = new Scene(developerPane, 400,200);
         return developerScreen;
     }
+    public Scene getDeveloperIssuesList(){
+        BorderPane pane= new BorderPane();
+        BorderPane input = new BorderPane();
+        GridPane fields = new GridPane();
+        HBox buttons = new HBox();
 
+        Button submit = new Button("Submit");
+        Button returnBtn = new Button("Return");
+
+        ListView<String> lvDisplay = new ListView<String>();
+        ArrayList<String> list = new ArrayList<String>();
+
+        for (String key : Developer.issueHash.keySet() ) {
+            list.add("" + key + " ~ " + Developer.issueHash.get(key));
+        }
+        lvDisplay.getItems().addAll(list);
+
+        fields.setPadding(new Insets(5));
+        fields.setVgap(3);
+        fields.setHgap(3);
+
+        input.setBottom(buttons);
+        pane.setCenter(lvDisplay);
+        buttons.setPadding(new Insets(5));
+        buttons.setSpacing(10);
+        buttons.getChildren().addAll(submit, returnBtn);
+        pane.setBottom(buttons);
+
+        returnBtn.setOnAction(e -> goBack());
+
+        developerIssuesList = new Scene(pane, 400,200);
+        return developerIssuesList;
+    }
     //Scene for users
 
     public Scene getUserScreen(){
@@ -658,12 +705,46 @@ public class loginMain extends Application {
 
         logout.setOnAction(e -> switchScreens(getLogout()));
         newIssue.setOnAction(e -> switchScreens(theIssues));
+        issueList.setOnAction(e -> switchScreens(getUserIssuesList()));
+
 
         stage.setTitle("User Screen");
         userScreen = new Scene(userPane, 400,200);
         return userScreen;
     }
+    public Scene getUserIssuesList(){
+        BorderPane pane= new BorderPane();
+        BorderPane input = new BorderPane();
+        GridPane fields = new GridPane();
+        HBox buttons = new HBox();
 
+        Button submit = new Button("Submit");
+        Button returnBtn = new Button("Return");
+
+        ListView<String> lvDisplay = new ListView<String>();
+        ArrayList<String> list = new ArrayList<String>();
+
+        for (String key : Manager.userObjects.get(loggedIn).getIssues().keySet() ) {
+            list.add("" + key + " ~ " + Manager.userObjects.get(loggedIn).getIssues().get(key));
+        }
+        lvDisplay.getItems().addAll(list);
+
+        fields.setPadding(new Insets(5));
+        fields.setVgap(3);
+        fields.setHgap(3);
+
+        input.setBottom(buttons);
+        pane.setCenter(lvDisplay);
+        buttons.setPadding(new Insets(5));
+        buttons.setSpacing(10);
+        buttons.getChildren().addAll(submit, returnBtn);
+        pane.setBottom(buttons);
+
+        returnBtn.setOnAction(e -> goBack());
+
+        developerIssuesList = new Scene(pane, 400,200);
+        return developerIssuesList;
+    }
     public Scene getNewIssue(){
         BorderPane pane= new BorderPane();
         BorderPane input = new BorderPane();
