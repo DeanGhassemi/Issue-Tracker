@@ -25,12 +25,6 @@ public class User{
         issues.put(issueName, "Pending");
     }
 
-    /**
-    * Clears all the input fields and returns to previous scene
-    */
-    public void cancelIssue(){
-    }
-
     public String getUsername() {
         return this.username;
     }
