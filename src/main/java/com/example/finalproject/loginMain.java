@@ -367,7 +367,7 @@ public class loginMain extends Application {
         ArrayList<String> list = new ArrayList<String>();
 
         for (String key : Developer.issueHash.keySet() ) {
-            list.add("" + key + " ~ " + Developer.issueHash.get(key));
+            list.add("" + key + "~" + Developer.issueHash.get(key));
         }
         lvDisplay.getItems().addAll(list);
 
@@ -396,17 +396,17 @@ public class loginMain extends Application {
     }
     public void closeIssue(ListView lv){
         String issue = (String) lv.getSelectionModel().getSelectedItem();
-        String[] keyval = issue.split(" ");
+        String[] keyval = issue.split("~");
         admin.closeIssue(keyval[0]);
     }    
     public void failIssue(ListView lv){
         String issue = (String) lv.getSelectionModel().getSelectedItem();
-        String[] keyval = issue.split(" ");
+        String[] keyval = issue.split("~");
         admin.failIssue(keyval[0]);
     }
     public void validateIssue(ListView lv){
         String issue = (String) lv.getSelectionModel().getSelectedItem();
-        String[] keyval = issue.split(" ");
+        String[] keyval = issue.split("~");
         admin.validateIssue(keyval[0]);
     }
     /** Show the create user screen
@@ -654,7 +654,7 @@ public class loginMain extends Application {
         ArrayList<String> list = new ArrayList<String>();
 
         for (String key : Developer.issueHash.keySet() ) {
-            list.add("" + key + " ~ " + Developer.issueHash.get(key));
+            list.add("" + key + "~" + Developer.issueHash.get(key));
         }
         lvDisplay.getItems().addAll(list);
         Button btnOpen = new Button("Open");
@@ -683,17 +683,17 @@ public class loginMain extends Application {
 
     public void openIssue(ListView lv){
         String issue = (String) lv.getSelectionModel().getSelectedItem();
-        String[] keyval = issue.split(" ");
+        String[] keyval = issue.split("~");
         devel.openIssue(keyval[0]);
     }    
     public void rejectIssue(ListView lv){
         String issue = (String) lv.getSelectionModel().getSelectedItem();
-        String[] keyval = issue.split(" ");
+        String[] keyval = issue.split("~");
         devel.rejectIssue(keyval[0]);
     }
     public void ResolveIssue(ListView lv){
         String issue = (String) lv.getSelectionModel().getSelectedItem();
-        String[] keyval = issue.split(" ");
+        String[] keyval = issue.split("~");
         devel.resolveIssue(keyval[0]);
     }
     //Scene for users
